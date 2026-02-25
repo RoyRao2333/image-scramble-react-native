@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "warn",
+    "perf": "warn"
+  },
+  "plugins": ["react", "react-perf", "jsdoc"],
+  "rules": {
+    "react-perf/jsx-no-new-object-as-prop": "off",
+    "react-perf/jsx-no-jsx-as-prop": "off"
+  }
+}
