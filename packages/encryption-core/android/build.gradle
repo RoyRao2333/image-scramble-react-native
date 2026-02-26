@@ -1,0 +1,60 @@
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def resolveReactNativeDirectory() {
+    def reactNativePackage = file(
+        providers.exec {
+            workingDir(rootDir)
+            commandLine("node", "--print", "require.resolve('react-native/package.json')")
+        }.standardOutput.asText.get().trim()
+    )
+    if (reactNativePackage.exists()) {
+        return reactNativePackage.parentFile
+    }
+    throw new GradleException(
+        "[EncryptionCore] Unable to resolve react-native location in node_modules."
+    )
+}
+
+def reactNativeRootDir = resolveReactNativeDirectory()
+
+apply plugin: "com.android.library"
+apply plugin: "com.facebook.react"
+
+android {
+    compileSdkVersion safeExtGet("compileSdkVersion", 35)
+
+    namespace "com.encryptioncore"
+
+    if (rootProject.hasProperty("ndkVersion")) {
+        ndkVersion rootProject.ext.ndkVersion
+    }
+
+    defaultConfig {
+        minSdkVersion safeExtGet("minSdkVersion", 24)
+        targetSdkVersion safeExtGet("targetSdkVersion", 35)
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared",
+                          "-DREACT_NATIVE_DIR=${reactNativeRootDir.path}"
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation "com.facebook.react:react-android"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@package/encryption-core",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "peerDependencies": {
+    "react-native": "*"
+  },
+  "codegenConfig": {
+    "name": "EncryptionCoreSpecs",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.encryptioncore.specs"
+    },
+    "ios": {
+      "modulesProvider": {
+        "NativeEncryptionCore": "NativeEncryptionCoreProvider"
+      }
+    }
+  }
+}

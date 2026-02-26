@@ -33,8 +33,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>允许应用使用您的相机进行拍照以进行图片混淆。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>允许应用访问您的相册以选择需要进行混淆处理的图片。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>允许应用将混淆后的图片保存到您的相册。</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
