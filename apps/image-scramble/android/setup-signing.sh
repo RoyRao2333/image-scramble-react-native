@@ -2,6 +2,12 @@
 
 # setup-signing.sh
 # Quickly set up Android signing configuration for local development.
+#
+# ⚠️  安全提示 / Security Notice:
+#    此脚本中的默认密码 (STORE_PASS/KEY_PASS = "android") 仅供本地开发使用。
+#    生产环境请修改为强密码，并将生成的 .jks 文件妥善保管（切勿提交至 git）。
+#    The default passwords in this script are for local development only.
+#    For production, use strong passwords and keep the .jks file private.
 
 cd "$(dirname "$0")"
 

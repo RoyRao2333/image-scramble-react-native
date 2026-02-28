@@ -497,3 +497,17 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,node,reactnative,visualstudiocode,androidstudio
+
+# ===== 开源安全补充规则 =====
+# Android 签名相关（双重保护）
+**/keystore.properties
+**/*.jks
+**/*.keystore
+# 构建日志
+**/*.log
+# macOS 元数据
+**/.DS_Store
+# Android 签名目录
+.signing/
+# iOS 本地环境配置
+**/.xcode.env.local
