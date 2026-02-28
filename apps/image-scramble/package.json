@@ -9,6 +9,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "start:c": "react-native start --reset-cache",
+    "build:ios-unsigned": "bash ./scripts/build-ios-unsigned.sh",
     "build:android": "(cd ./android && rm -rf app/build app/.cxx && ./gradlew assembleRelease --no-configuration-cache)",
     "bundle:install": "(cd ./ios && bundle install)",
     "bundle:update": "(cd ./ios && bundle update --bundler)",
