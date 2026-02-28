@@ -1,97 +1,45 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+<div align="center">
+  <img src="apps/image-scramble/android/app/src/main/res/drawable-nodpi/app_icon_source.jpg" width="128" height="128" alt="ImageScramble Icon" />
+  <h1>ImageScramble</h1>
+  <p>一个基于 C++ 高性能内核的跨平台图像混淆应用</p>
+</div>
 
-# Getting Started
+---
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+基于 C++ 的高性能图像混淆算法项目，提供了完整的（Android & iOS）应用支持。
 
-## Step 1: Start Metro
+## 图像混淆算法 / Algorithms
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+本项目包含 6 种不同的图像混淆算法，每种算法具有单独的实现逻辑与适用场景：
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **块混淆**：将图像划分为多个宏块，并根据密钥生成的 MD5 散列序列来打乱块的二维位置。
+  - *适用场景*：大范围图像块混乱，执行速度极快，对计算资源要求较低。
+- **兼容PicEncrypt: 行模式**：基于逻辑斯谛映射（Logistic Map）计算伪随机序列，对整行像素整体进行垂直方向的置乱。
+  - *适用场景*：保留水平方向像素连续性而破坏垂直结构，适用于需要保留部分原始图像特征方向的轻度混淆。
+- **兼容PicEncrypt: 行+列模式**：结合行与列维度的 Logistic Map 混沌序列，分别在水平和垂直方向进行像素行和列的置乱。
+  - *适用场景*：中高安全性要求，彻底打乱了行列层面的图像结构特征。
+- **行像素混淆**：每一行内部的像素会根据共同的 MD5 洗牌阵列被独立打乱，每一行打乱的规则相同。
+  - *适用场景*：单维度的高强度混淆，破坏水平特征的轻量级混淆方法。
+- **逐像素混淆**：在整个图像的二维平面上，结合行、列独立的 MD5 混淆数组，进行像素级别的精确映射与完全乱序。
+  - *适用场景*：极高的安全性要求，能够完全破坏原始图像的一切可视特征。
+- **🍅小番茄图片混淆**：先沿 Gilbert 2D（一种空间填充曲线）展开像素生成一维序列，再根据密钥计算偏移量，沿着曲线路径整体循环平移。
+  - *适用场景*：保留局部像素天然关联性的特殊混淆方式，或需要借助不可预测的非线性路径展开的特殊应用场景。
 
-```sh
-# Using npm
-npm start
+## 密钥说明表 / Key Configurations
 
-# OR using Yarn
-yarn start
-```
+以下为不同混淆算法在执行（加密/解密）时所接受的密钥输入规范与要求：
 
-## Step 2: Build and run your app
+| 混淆算法 / Algorithm          | 密钥类型 / Key Type | 填写规则与使用建议 / Rules & Usage Scenarios                            |
+| :---------------------------- | :-----------------: | :---------------------------------------------------------------------- |
+| **块混淆**                    |      `String`       | 任意字符串（如密码）。内部截取生成 MD5 种子进行洗牌排序。               |
+| **兼容PicEncrypt: 行模式**    |      `Double`       | Logistic Map 初值。必须是 `(0, 1)` 范围内的数字（例如 `0.666`）。       |
+| **兼容PicEncrypt: 行+列模式** |      `Double`       | Logistic Map 初值。必须是 `(0, 1)` 范围内的数字。建议选择无理数截断值。 |
+| **行像素混淆**                |      `String`       | 任意字符串。根据其 MD5 散列值打乱行内像素。                             |
+| **逐像素混淆**                |      `String`       | 任意字符串。结合行、列长度生成乱序种子打乱全像素。                      |
+| **🍅小番茄图片混淆**           |      `Double`       | 控制偏移量的参数。必须是 `(0, 1.618]` 范围内的非零数字。                |
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## 致谢 / Acknowledgements
 
-### Android
+向 [jiarandiana0307/PicEncrypt](https://github.com/jiarandiana0307/PicEncrypt) 仓库致敬！本项目充分汲取了该开源仓库中提供的优秀算法思路。由于原开源项目仅支持 Android 平台，本项目的初衷便是基于其算法逻辑进行跨平台重构，以实现多端支持。
 
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+特此声明并表达诚挚敬意。
