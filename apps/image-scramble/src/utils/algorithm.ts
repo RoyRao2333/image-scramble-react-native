@@ -1,12 +1,12 @@
 import { type Algorithm } from '@package/encryption-core';
 
 export const ALGORITHM_LABELS: Record<Algorithm, string> = {
-  tomato: 'Tomato',
-  block: 'Block',
-  perPixel: 'Per Pixel',
-  rowPixel: 'Row Pixel',
-  picEncryptRow: 'PicEncrypt Row',
-  picEncryptRowColumn: 'PicEncrypt Row+Column',
+  tomato: '🍅小番茄图片混淆',
+  block: '块混淆',
+  perPixel: '逐像素混淆',
+  rowPixel: '行像素混淆',
+  picEncryptRow: '兼容PicEncrypt: 行模式',
+  picEncryptRowColumn: '兼容PicEncrypt: 行+列模式',
 };
 
 export const isDoubleKeyAlgorithm = (algo: Algorithm): boolean =>
