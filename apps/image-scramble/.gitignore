@@ -623,3 +623,7 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/reactnative,swift,swiftpackagemanager,kotlin,gradle,android,androidstudio,xcode,macos,java,cocoapods,ruby
 
 .xcode.env.local
+
+# 忽略所有子项目下的 Kotlin 临时文件
+**/.kotlin/
+**/*.salive

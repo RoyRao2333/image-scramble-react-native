@@ -1,5 +1,7 @@
 import { TurboModule, TurboModuleRegistry } from 'react-native';
 
+declare var global: any;
+
 export interface Spec extends TurboModule {
   /**
    * 加密像素数据
@@ -56,4 +58,22 @@ export interface Spec extends TurboModule {
   ) => string;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('NativeEncryptionCore');
+// 1. 获取（或迫使加载）原始 Native 模块以触发 Kotlin 的 Initialize 方法
+const EnforcingModule = TurboModuleRegistry.getEnforcing<Spec>(
+  'NativeEncryptionCore',
+);
+
+// 2. 将代理对象的查询延后到具体的函数调用时刻
+const EncryptionCoreProxy = new Proxy(EnforcingModule, {
+  get(target, prop, receiver) {
+    const jsiProxy = (global as any).__NativeEncryptionCoreProxy;
+    // 如果 JSI C++ 代理成功安装且此方法在其内部存在，则直接截获并走 C++ 原生方法
+    if (jsiProxy && prop in jsiProxy) {
+      return Reflect.get(jsiProxy, prop, receiver);
+    }
+    // 否则退回标准的 TurboModule (iOS 依靠此路径运行)
+    return Reflect.get(target, prop, receiver);
+  },
+});
+
+export default EncryptionCoreProxy as Spec;

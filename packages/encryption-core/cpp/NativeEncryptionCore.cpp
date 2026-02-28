@@ -7,6 +7,10 @@
 #include <stdexcept>
 #include <vector>
 
+#ifdef __ANDROID__
+#include <jni.h>
+#endif
+
 namespace facebook::react {
 
 NativeEncryptionCore::NativeEncryptionCore(
@@ -212,9 +216,16 @@ jsi::Object NativeEncryptionCore::decrypt(jsi::Runtime &rt,
                          PicEncrypt::ProcessType::DECRYPT);
 }
 
-jsi::Object NativeEncryptionCore::readImagePixels(jsi::Runtime &rt,
+jsi::Object readImagePixelsImpl(jsi::Runtime &rt,
                                                   jsi::String filePath) {
   std::string path = filePath.utf8(rt);
+
+  // 若以 file:// 开头，则移除前缀以确保能够被 fstream 正确读取
+  const std::string filePrefix = "file://";
+  if (path.length() >= filePrefix.length() && 
+      path.compare(0, filePrefix.length(), filePrefix) == 0) {
+    path = path.substr(filePrefix.length());
+  }
 
   // 使用 fstream 读取文件到内存（STBI_NO_STDIO 模式）
   std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -286,7 +297,7 @@ jsi::Object NativeEncryptionCore::readImagePixels(jsi::Runtime &rt,
   return result;
 }
 
-jsi::String NativeEncryptionCore::pixelsToBase64Png(jsi::Runtime &rt,
+jsi::String pixelsToBase64PngImpl(jsi::Runtime &rt,
                                                     jsi::Object pixelBuffer,
                                                     double width,
                                                     double height) {
@@ -328,6 +339,83 @@ jsi::String NativeEncryptionCore::pixelsToBase64Png(jsi::Runtime &rt,
 
   return jsi::String::createFromUtf8(rt, base64);
 }
+
+jsi::Object NativeEncryptionCore::readImagePixels(jsi::Runtime &rt,
+                                                  jsi::String filePath) {
+  return readImagePixelsImpl(rt, std::move(filePath));
+}
+
+jsi::String NativeEncryptionCore::pixelsToBase64Png(jsi::Runtime &rt,
+                                                    jsi::Object pixelBuffer,
+                                                    double width,
+                                                    double height) {
+  return pixelsToBase64PngImpl(rt, std::move(pixelBuffer), width, height);
+}
+
+#ifdef __ANDROID__
+extern "C" JNIEXPORT void JNICALL
+Java_com_encryptioncore_EncryptionCoreModule_nativeInstallJSI(
+    JNIEnv *env, jobject thiz, jlong jsiRuntimePointer) {
+  auto runtime = reinterpret_cast<facebook::jsi::Runtime *>(jsiRuntimePointer);
+  if (!runtime)
+    return;
+
+  facebook::jsi::Object proxy(*runtime);
+
+  proxy.setProperty(
+      *runtime, "encrypt",
+      facebook::jsi::Function::createFromHostFunction(
+          *runtime, facebook::jsi::PropNameID::forAscii(*runtime, "encrypt"), 5,
+          [](facebook::jsi::Runtime &rt, const facebook::jsi::Value &thisVal,
+             const facebook::jsi::Value *args,
+             size_t count) -> facebook::jsi::Value {
+            return processScramble(
+                rt, args[0].asObject(rt), args[1].asNumber(),
+                args[2].asNumber(), args[3].asString(rt), args[4].asString(rt),
+                PicEncrypt::ProcessType::ENCRYPT);
+          }));
+
+  proxy.setProperty(
+      *runtime, "decrypt",
+      facebook::jsi::Function::createFromHostFunction(
+          *runtime, facebook::jsi::PropNameID::forAscii(*runtime, "decrypt"), 5,
+          [](facebook::jsi::Runtime &rt, const facebook::jsi::Value &thisVal,
+             const facebook::jsi::Value *args,
+             size_t count) -> facebook::jsi::Value {
+            return processScramble(
+                rt, args[0].asObject(rt), args[1].asNumber(),
+                args[2].asNumber(), args[3].asString(rt), args[4].asString(rt),
+                PicEncrypt::ProcessType::DECRYPT);
+          }));
+
+  proxy.setProperty(
+      *runtime, "readImagePixels",
+      facebook::jsi::Function::createFromHostFunction(
+          *runtime,
+          facebook::jsi::PropNameID::forAscii(*runtime, "readImagePixels"), 1,
+          [](facebook::jsi::Runtime &rt, const facebook::jsi::Value &thisVal,
+             const facebook::jsi::Value *args,
+             size_t count) -> facebook::jsi::Value {
+            return readImagePixelsImpl(rt, args[0].asString(rt));
+          }));
+
+  proxy.setProperty(
+      *runtime, "pixelsToBase64Png",
+      facebook::jsi::Function::createFromHostFunction(
+          *runtime,
+          facebook::jsi::PropNameID::forAscii(*runtime, "pixelsToBase64Png"), 3,
+          [](facebook::jsi::Runtime &rt, const facebook::jsi::Value &thisVal,
+             const facebook::jsi::Value *args,
+             size_t count) -> facebook::jsi::Value {
+            return pixelsToBase64PngImpl(rt, args[0].asObject(rt),
+                                         args[1].asNumber(),
+                                         args[2].asNumber());
+          }));
+
+  runtime->global().setProperty(*runtime, "__NativeEncryptionCoreProxy",
+                                std::move(proxy));
+}
+#endif
 
 } // namespace facebook::react
 

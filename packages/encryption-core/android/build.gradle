@@ -20,6 +20,7 @@ def resolveReactNativeDirectory() {
 def reactNativeRootDir = resolveReactNativeDirectory()
 
 apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 android {
@@ -53,8 +54,13 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    buildFeatures {
+        prefab true
+    }
 }
 
 dependencies {
     implementation "com.facebook.react:react-android"
+    implementation "com.facebook.fbjni:fbjni:0.6.0"
 }

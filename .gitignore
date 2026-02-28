@@ -376,6 +376,14 @@ buck-out/
 *.ap_
 *.aab
 
+# Apple Sign
+*.p8
+*.p12
+
+# Android Signing
+*.jks
+keystore.properties
+
 # Files for the ART/Dalvik VM
 *.dex
 
